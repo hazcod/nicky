@@ -62,9 +62,6 @@ def findBestRelease(downloadPlaylist):
 	print("Best version has bitrate of " + bestRendition['bitrate'])
 	return bestRendition.find('src').getText()
 
-#"Spongebob Squarepants"
-#"/Volumes/Data/online/My Drive/Media/Series/Spongebob Squarepants/"
-#"http://www.nickelodeon.be/shows/474-spongebob"
 scannerBin = "/Applications/Plex Media Server.app/Contents/MacOS/Plex Media Scanner"
 
 if len(sys.argv) is not 4:
