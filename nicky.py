@@ -59,6 +59,10 @@ def findBestRelease(downloadPlaylist):
 	for rendition in renditions:
 		if bestRendition is None or (int(rendition['bitrate']) > int(bestRendition['bitrate'])):
 			bestRendition = rendition
+			
+	if bestRendition is None:
+		return None
+	
 	print("Best version has bitrate of " + bestRendition['bitrate'])
 	return bestRendition.find('src').getText()
 
@@ -99,6 +103,9 @@ for episode in episodes:
 	downloadPlaylist = parsePage(downloadPage(downloadPlaylistUrl))
 
 	rtmpUrl = findBestRelease(downloadPlaylist)
+	if rtmpUrl is None:
+		print("WARNING: skipping since we didn't find a useable stream")
+		continue
 
 	print("Downloading to " + destinationPath)
 	if downloadStream(rtmpUrl, destinationPath) is False:
