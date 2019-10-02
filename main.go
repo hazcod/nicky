@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -250,6 +251,30 @@ func extractBestQualityStream(playlist Playlist) (url string, err error) {
 	return bestRendition.Src, nil
 }
 
+func moveFile(sourcePath, destPath string) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Couldn't open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("Couldn't open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("Writing to output file failed: %s", err)
+	}
+	// The copy was successful, so now delete the original file
+	err = os.Remove(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Failed removing original file: %s", err)
+	}
+	return nil
+}
+
 func ScrapeRTMP(rtmpPath string, rtmpUrl string, destPath string) (err error) {
 	f, err := ioutil.TempFile("/tmp/", "nicky")
 	if err != nil {
@@ -269,7 +294,7 @@ func ScrapeRTMP(rtmpPath string, rtmpUrl string, destPath string) (err error) {
 		return errors.New("rtmpdump failed to save to: " + f.Name())
 	}
 
-	if err := os.Rename(f.Name(), destPath); err != nil {
+	if err := moveFile(f.Name(), destPath); err != nil {
 		return errors.New("could not move file:" + err.Error())
 	}
 
