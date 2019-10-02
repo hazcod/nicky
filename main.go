@@ -251,13 +251,12 @@ func extractBestQualityStream(playlist Playlist) (url string, err error) {
 }
 
 func ScrapeRTMP(rtmpPath string, rtmpUrl string, destPath string) (err error) {
-	//"/usr/local/bin/rtmpdump --url " + shlex.quote(source) + " -o  " + tempFile
 	f, err := ioutil.TempFile("/tmp/", "nicky")
 	if err != nil {
 		return errors.New("could not create temp file: %v" + err.Error())
 	}
 
-	defer f.Close()
+	f.Close()
 	defer os.Remove(f.Name())
 
 	cmd := exec.Command(rtmpPath, "--quiet", "--url", rtmpUrl, "--flv", f.Name())
@@ -266,8 +265,12 @@ func ScrapeRTMP(rtmpPath string, rtmpUrl string, destPath string) (err error) {
 		return errors.New("could not run rtmpdump: %v" + err.Error())
 	}
 
+	if _, err := os.Stat(f.Name()); os.IsNotExist(err) {
+		return errors.New("rtmpdump failed to save to: " + f.Name())
+	}
+
 	if err := os.Rename(f.Name(), destPath); err != nil {
-		return errors.New("could not move file: %v" + err.Error())
+		return errors.New("could not move file:" + err.Error())
 	}
 
 	return nil
@@ -326,8 +329,8 @@ func main() {
 
 		destPath := filepath.Join(
 			mediaPath,
-			fmt.Sprintf("%s/", epi.Show),
-			fmt.Sprintf("%s - %s - S%02dE%02d.mp4", epi.Show, epi.Title, epi.Season, epi.Episode),
+			//			fmt.Sprintf("%s/", epi.Show),
+			fmt.Sprintf("%s - S%02dE%02d.mp4", epi.Show, epi.Season, epi.Episode),
 		)
 		log.Printf("will be saved to %s", destPath)
 
