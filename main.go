@@ -21,6 +21,7 @@ import (
 
 const (
 	defaultRtmpPath = "/usr/local/bin/rtmpdump"
+	plexScanner     = "/Applications/Plex Media Server.app/Contents/MacOS/Plex Media Scanner"
 )
 
 var (
@@ -310,6 +311,10 @@ func main() {
 	flag.StringVar(&mediaPath, "path", "", "The directory where to store the files")
 	var rtmpPath string
 	flag.StringVar(&rtmpPath, "rtmp", defaultRtmpPath, "The path to the rtmpdump binary")
+	var scannerPath string
+	flag.StringVar(&scannerPath, "scanner", plexScanner, "The path to the Plex scanner")
+	var scanSection int
+	flag.IntVar(&scanSection, "section", 4, "Section id of the plex library")
 	flag.Parse()
 
 	if showId == "" || website == "" || mediaPath == "" {
@@ -337,6 +342,11 @@ func main() {
 
 	log.Printf("found %d episodes for %s", len(episodes), showId)
 
+	if len(episodes) == 0 {
+		os.Exit(0)
+	}
+
+	needsScan := false
 	for _, epi := range episodes {
 		log.Printf("Downloading %s %s", epi.Show, epi.Title)
 
@@ -382,5 +392,17 @@ func main() {
 			log.Printf("could not scrape rtmp to %s: %v", destPath, err)
 			continue
 		}
+
+		needsScan = true
+	}
+
+	if !needsScan {
+		os.Exit(0)
+	}
+
+	log.Printf("Scanning to Plex: %s", mediaPath)
+	cmd := exec.Command(scannerPath, "--verbose", "--section", string(scanSection), "--scan", "--directory", mediaPath)
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("could not run scanner: %v", err)
 	}
 }
