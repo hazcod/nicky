@@ -19,5 +19,5 @@ jobs:
     - name: Download go modules
       run: go mod download
       
-    - name: Buil
+    - name: Build
       run: go build
