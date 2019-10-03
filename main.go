@@ -277,7 +277,7 @@ func moveFile(sourcePath, destPath string) error {
 }
 
 func ScrapeRTMP(rtmpPath string, rtmpUrl string, destPath string) (err error) {
-	f, err := ioutil.TempFile("/tmp/", "nicky")
+	f, err := ioutil.TempFile(os.TempDir(), "nicky")
 	if err != nil {
 		return errors.New("could not create temp file: %v" + err.Error())
 	}
